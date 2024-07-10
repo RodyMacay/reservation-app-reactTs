@@ -1,14 +1,13 @@
-import { SensorData, DataSensorResponse } from "../../models";
+import { ReservationData, ReservationDataResponse } from "../../models";
+import { sensorAdapter } from "../sensor";
 
-
-
-export const sensorAdapter = (reservation: DataSensorResponse): SensorData  => {
-    const formatoSensor:SensorData = {
-        nombre : reservation.nombre,
-        ubicacion: reservation.ubicacion,
-        estado : reservation.estado,
-        active: reservation.active
-    };
-
-    return formatoSensor;
+export const reservationAdapter = (reservation: ReservationDataResponse): ReservationData => {
+  return {
+    idReservacion : reservation.idReservacion,
+    usuario : reservation.usuario,
+    fecha_reservacion: reservation.fecha_reservacion,
+    placa: reservation.placa,
+    sensor_activado: reservation.sensor_activado,
+    activo : reservation.activo
+  };
 };

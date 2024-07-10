@@ -4,21 +4,27 @@ export interface UserData {
   password?: string;
 }
 
-export interface UserDataResponse {
-  id?: number;
-  username?: string;
-  email?: string;
-  password?: string;
-  createdAt?: string;
-  updatedAt?: string;
-};
+// models.ts
 
+// user.model.ts
+export interface UserDataResponse {
+  id: string;
+  username: string;
+  email: string;
+  password?: string; // Hacer opcional si no se devuelve en la respuesta
+  profile: {
+    id: string | null; // Puede ser null según el ejemplo de la API
+    // Otros campos del perfil si los hubiera
+  } | null;
+  jwt: string; // Añadir jwt aquí
+  roles: string[]
+}
 
 export interface AuthResponse {
-  token: string;
   user: UserDataResponse;
 }
 
+
 export interface DataResponse {
-  data: AuthResponse; 
+  data: AuthResponse;
 }

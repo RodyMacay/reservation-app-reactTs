@@ -1,48 +1,74 @@
-import { DataSensorResponse, SensorData } from "../../models";
-import {instanceDJ} from "../../config/axiosConfig";
-import { sensorAdapter } from '../../adapters';
+import { ReservationDataResponse, ReservationData } from "../../models";
+import { instanceDJ, instanceReact } from "../../config/axiosConfig";
+import { reservationAdapter } from '../../adapters';
+import axios from "axios";
 
-export const createSensor = async (reservationData: SensorData): Promise<DataSensorResponse> => {
+export const createReservacion = async (formData: any, token: string) => {
+  const { sensorId, placa } = formData;
+
   try {
-    const response = await instanceDJ.post(`/sensor/list/`, sensorAdapter(reservationData));
+    const response = await axios.post(
+      'http://localhost:3004/api/reservacion',
+      { sensorId, placa },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    console.log('Reservación creada:', response.data);
     return response.data;
   } catch (error) {
-    console.error('Error creating reservation:', error);
+    console.error('Error creando la reservación:', error);
     throw error;
+  }
+};
+
+
+
+export async function findAllUserVehicles(userId: number) {
+  try {
+    const response = await instanceReact.get(`/vehicles?userId=${userId}`);
+    return response.data; // Suponiendo que el endpoint devuelve los vehículos del usuario
+  } catch (error) {
+    console.error('Error fetching user vehicles:', error);
+    throw new Error('Error fetching user vehicles');
   }
 }
 
-export const findAllSensor = async (): Promise<DataSensorResponse[]> => {
+export const findAllReservations = async (): Promise<ReservationDataResponse[]> => {
   try {
-    const response = await instanceDJ.get(`/reservacion`);
-    return response.data.map((reservation: DataSensorResponse) => sensorAdapter(reservation));
+    const response = await instanceDJ.get(`/reservacion/list/`);
+    console.log(response.data)
+    return response.data.map((reservation: ReservationDataResponse) => reservationAdapter(reservation));
   } catch (error) {
     console.error('Error fetching all reservations:', error);
     throw error;
   }
 }
 
-export const findOneSensor = async (reservationId: string): Promise<DataSensorResponse> => {
+export const findOneReservations = async (reservationId: string): Promise<ReservationDataResponse> => {
   try {
     const response = await instanceDJ.get(`/reservacion/${reservationId}`);
-    return sensorAdapter(response.data);
+    return reservationAdapter(response.data);
   } catch (error) {
     console.error('Error fetching reservation:', error);
     throw error;
   }
 }
 
-export const updateSensor = async (reservationId: string, reservationData: SensorData): Promise<DataSensorResponse> => {
+export const updateReservations = async (reservationId: string, reservationData: ReservationData): Promise<ReservationDataResponse> => {
   try {
-    const response = await instanceDJ.patch(`/reservacion/${reservationId}`, sensorAdapter(reservationData));
-    return sensorAdapter(response.data);
+    const response = await instanceDJ.patch(`/reservacion/${reservationId}`, reservationAdapter(reservationData));
+    return reservationAdapter(response.data);
   } catch (error) {
     console.error('Error updating reservation:', error);
     throw error;
   }
 }
 
-export const deleteSensor = async (reservationId: string): Promise<void> => {
+export const deleteReservations = async (reservationId: string): Promise<void> => {
   try {
     await instanceDJ.delete(`/reservacion/${reservationId}`);
   } catch (error) {

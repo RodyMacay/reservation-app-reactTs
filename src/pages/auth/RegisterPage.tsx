@@ -14,7 +14,7 @@ export const RegisterPage = () => {
     const onSubmit = async (data: UserDataResponse) => {
         try {
             const res = await Register(data);
-            const token = res.data.token;
+            const token = res.data.jwt;
             const auth = res.data.user;
             console.log(auth)
             setLogin(token);

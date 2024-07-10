@@ -1,10 +1,10 @@
 import { useForm } from "react-hook-form";
-import { UserDataResponse } from "../../../../models";
+import { Credentials, UserDataResponse } from "../../../../models";
 import { Button, Input, Label } from "..";
 import React from "react";
 
 interface AuthFormProps {
-    onSubmit: (data: UserDataResponse) => void;
+    onSubmit: (data: Credentials) => void;
     buttonText: string;
     isRegister?: boolean;
 }
