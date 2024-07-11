@@ -1,16 +1,73 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ModalDetalleVenta } from '../../components/modal/ModalDetalleVenta';
+import { useAuthStore } from '../../store';
+import { createReservacion, findAllSensor, getProfileById } from '../../services';
 
 export const AddReservation = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [availableSensors, setAvailableSensors] = useState<any[]>([]);
+  const [profile, setProfile] = useState<any | null>(null);
+  const [formData, setFormData] = useState({
+    sensorId: '',
+    placa: '',
+  });
+  const authStore = useAuthStore();
 
-  const handleSaveReservacion = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    // Lógica para guardar la reservación
-    // ...
+  useEffect(() => {
+    fetchAvailableSensors();
+    fetchUserProfile();
+  }, []);
 
-    // Mostrar el modal después de guardar la reservación
-    setIsModalOpen(true);
+  const fetchAvailableSensors = async () => {
+    try {
+      const sensorData = await findAllSensor();
+      const available = sensorData.filter(sensor => sensor.estado === false);
+      setAvailableSensors(available);
+    } catch (error) {
+      console.error('Error fetching available sensors:', error);
+    }
+  };
+
+  const fetchUserProfile = async () => {
+    try {
+      const fetchedProfile = await getProfileById(authStore.token);
+      setProfile(fetchedProfile);
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const {  sensorId, placa } = formData;
+    const token = authStore.token;
+
+    console.log('Form Data:', formData); // Mensaje de depuración para verificar el formData
+
+    try {
+      if (!sensorId || !placa) {
+        console.error('Debe seleccionar un sensor y una placa válida');
+        return;
+      }
+
+      console.log('FormData enviado:', formData); // Mensaje de depuración para verificar el FormData antes de enviarlo
+
+      await createReservacion(formData, token);
+      
+      setIsModalOpen(true); // Mostrar modal de éxito o realizar otra acción
+    } catch (error) {
+      console.error('Error creating reservation:', error);
+      // Manejar el error según tus necesidades
+    }
   };
 
   const handleCloseModal = () => {
@@ -18,117 +75,64 @@ export const AddReservation = () => {
   };
 
   return (
-    <div className="w-full bg-gray-100 dark:bg-gray-800 flex flex-col">
-      <div className="bg-white dark:bg-gray-900 shadow-lg p-4 rounded-lg">
-        <h2 className="text-lg font-medium text-gray-800 dark:text-gray-200 mb-4">Reservar Asiento</h2>
-        <form className="grid gap-4" onSubmit={handleSaveReservacion}>
-          <div className="grid gap-2">
-            <label className="text-sm font-medium leading-none" htmlFor="user">
-              Usuario
-            </label>
-            <div className="relative">
-              <button
-                type="button"
-                className="flex h-10 w-full items-center justify-between rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
-              >
-                <span style={{ pointerEvents: 'none' }}></span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="feather feather-chevron-down h-4 w-4"
-                  aria-hidden="true"
+    <div className="min-h-screen w-full bg-gradient-to-br from-gray-500 to-gray-600 flex items-center justify-center p-4">
+      <div className="bg-white dark:bg-gray-800 shadow-xl rounded-lg w-full max-w-md overflow-hidden">
+        <div className="bg-gray-700 p-6">
+          <h2 className="text-xl font-bold text-white">Reservar Asiento</h2>
+        </div>
+        <div className="p-6">
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" htmlFor="sensor">
+                  Sensor Activado
+                </label>
+                <select
+                  id="sensor"
+                  name="sensorId"
+                  className="w-full h-10 border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  value={formData.sensorId}
+                  onChange={handleInputChange}
+                  required
                 >
-                  <path d="M6 9l6 6 6-6" />
-                </svg>
-              </button>
-              <select
-                id="user"
-                className="absolute w-full h-full opacity-0 top-0 left-0"
-                tabIndex="-1"
-                aria-hidden="true"
-              >
-                <option value="1">John Doe</option>
-                <option value="2">Jane Smith</option>
-                <option value="3">Bob Johnson</option>
-              </select>
-            </div>
-          </div>
-          <div className="grid gap-2">
-            <label className="text-sm font-medium leading-none" htmlFor="date">
-              Fecha de Reservación
-            </label>
-            <input
-              type="datetime-local"
-              id="date"
-              className="w-full h-10 border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
-            />
-          </div>
-          <div className="grid gap-2">
-            <label className="text-sm font-medium leading-none" htmlFor="sensor">
-              Sensor Activado
-            </label>
-            <div className="relative">
-              <button
-                type="button"
-                className="flex h-10 w-full items-center justify-between rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
-              >
-                <span style={{ pointerEvents: 'none' }}></span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="feather feather-chevron-down h-4 w-4"
-                  aria-hidden="true"
+                  <option value="">Seleccionar sensor</option>
+                  {availableSensors.map(sensor => (
+                    <option key={sensor.id} value={sensor.id}>
+                      {sensor.nombre}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" htmlFor="license-plate">
+                  Placa
+                </label>
+                <select
+                  id="license-plate"
+                  name="placa"
+                  className="w-full h-10 border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  value={formData.placa}
+                  onChange={handleInputChange}
+                  required
                 >
-                  <path d="M6 9l6 6 6-6" />
-                </svg>
-              </button>
-              <select
-                id="sensor"
-                className="absolute w-full h-full opacity-0 top-0 left-0"
-                tabIndex="-1"
-                aria-hidden="true"
-              >
-                <option value="1">Sensor 1</option>
-                <option value="2">Sensor 2</option>
-                <option value="3">Sensor 3</option>
-              </select>
+                  <option value="">Seleccionar placa</option>
+                  {profile?.vehiculos.map((vehicle: any) => (
+                    <option key={vehicle.id} value={vehicle.placa}>
+                      {vehicle.placa}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
-          </div>
-          
-          <div className="grid gap-2">
-            <label className="text-sm font-medium leading-none" htmlFor="license-plate">
-              Placa
-            </label>
-            <input
-              type="text"
-              id="license-plate"
-              className="w-full h-10 border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
-            />
-          </div>
-          <button
-            type="submit"
-            className="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-11 rounded-md px-8"
-          >
-            Guardar Reservación
-          </button>
-        </form>
+            <button
+              type="submit"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition duration-300 ease-in-out transform hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            >
+              Guardar Reservación
+            </button>
+          </form>
+        </div>
       </div>
-
-      {/* ModalDetalleVenta componente */}
       <ModalDetalleVenta isOpen={isModalOpen} onClose={handleCloseModal} />
     </div>
   );

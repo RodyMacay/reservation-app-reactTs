@@ -1,1 +1,1 @@
-export * from './Reservations.Services';
+export * from './Reservations.services';

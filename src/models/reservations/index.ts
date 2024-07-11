@@ -1,2 +1,2 @@
-export * from './Reservations.models';
+export * from './Reservation.model';
 

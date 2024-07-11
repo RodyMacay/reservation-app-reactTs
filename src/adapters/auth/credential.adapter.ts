@@ -1,11 +1,8 @@
+import { Credentials, UserData } from '../../models';
 
-import { UserDataResponse } from '../../models';
-import { Credentials } from '../../models/auth/credentials.model';
-
-export const credentialAdapter = (credential: UserDataResponse): Credentials => {
-    const formatoCredential: Credentials = {
-        email: credential.email,
-        password: credential.password,
+export const credentialsAdapter = (credentials: Credentials): { email: string; password: string } => {
+    return {
+      email: credentials.email,
+      password: credentials.password,
     };
-    return formatoCredential;
-};
+  };
