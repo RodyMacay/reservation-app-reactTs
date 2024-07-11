@@ -40,7 +40,7 @@ export async function findAllUserVehicles(userId: number) {
 export const findAllReservations = async (): Promise<ReservationDataResponse[]> => {
   try {
     const response = await instanceDJ.get(`/reservacion/list/`);
-    console.log(response.data)
+    console.log("lista de reservacion",response.data)
     return response.data.map((reservation: ReservationDataResponse) => reservationAdapter(reservation));
   } catch (error) {
     console.error('Error fetching all reservations:', error);
