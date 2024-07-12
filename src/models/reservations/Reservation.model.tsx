@@ -1,4 +1,4 @@
-import { SensorData } from '../../models'
+import { SensorData } from '..'
 export interface ReservationData {
     idReservacion : string;
     usuario : string;

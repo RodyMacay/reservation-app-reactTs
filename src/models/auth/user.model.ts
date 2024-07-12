@@ -16,7 +16,7 @@ export interface UserDataResponse {
     id: string | null; // Puede ser null según el ejemplo de la API
     // Otros campos del perfil si los hubiera
   } | null;
-  jwt: string; // Añadir jwt aquí
+  jwt?: string; // Añadir jwt aquí
   roles: string[]
 }
 

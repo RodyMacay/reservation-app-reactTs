@@ -2,9 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { ModalDetalleVenta } from '../../components/modal/ModalDetalleVenta';
 import { useAuthStore } from '../../store';
 import { createReservacion, findAllSensor, getProfileById } from '../../services';
+import { IAddVenta } from '../../interfaces';
+import { useVentaStore } from '../../store/venta/ventaStore';
 
 export const AddReservation = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isReservation, setIsReservation] = useState<IAddVenta>({
+    reservacion_id: ''
+  });
   const [availableSensors, setAvailableSensors] = useState<any[]>([]);
   const [profile, setProfile] = useState<any | null>(null);
   const [formData, setFormData] = useState({
@@ -12,6 +17,7 @@ export const AddReservation = () => {
     placa: '',
   });
   const authStore = useAuthStore();
+  const { addVenta } = useVentaStore();
 
   useEffect(() => {
     fetchAvailableSensors();
@@ -61,7 +67,11 @@ export const AddReservation = () => {
 
       console.log('FormData enviado:', formData); // Mensaje de depuración para verificar el FormData antes de enviarlo
 
-      await createReservacion(formData, token);
+      const reservacion = await createReservacion(formData, token);
+
+      const id_reserva = reservacion.message.reservacion_id;
+
+      addVenta(id_reserva) 
       
       setIsModalOpen(true); // Mostrar modal de éxito o realizar otra acción
     } catch (error) {
