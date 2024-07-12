@@ -15,7 +15,7 @@ type Actions = {
 export const useVentaStore = create<State & Actions>((set, get) => ({
     venta: undefined,
     addVenta: async (reservacion_id: IAddVenta) => {
-
+        
         const res = await createVenta(reservacion_id)
         if (!res) {
             set({ venta: undefined })

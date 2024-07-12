@@ -1,16 +1,76 @@
 import React, { useState, useEffect } from 'react';
 import { ModalDetalleVenta } from '../../components/modal/ModalDetalleVenta';
+import { useAuthStore } from '../../store';
+import { createReservacion, findAllSensor, getProfileById } from '../../services';
+import { useVentaStore } from '../../store/venta/ventaStore';
 
 export const AddReservation = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [availableSensors, setAvailableSensors] = useState<any[]>([]);
+  const [profile, setProfile] = useState<any | null>(null);
+  const [formData, setFormData] = useState({
+    sensorId: '',
+    placa: '',
+  });
+  const authStore = useAuthStore();
+  const { addVenta } = useVentaStore()
 
-  const handleSaveReservacion = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    // Lógica para guardar la reservación
-    // ...
+  useEffect(() => {
+    fetchAvailableSensors();
+    fetchUserProfile();
+  }, []);
 
-    // Mostrar el modal después de guardar la reservación
-    setIsModalOpen(true);
+  const fetchAvailableSensors = async () => {
+    try {
+      const sensorData = await findAllSensor();
+      const available = sensorData.filter(sensor => sensor.estado === false);
+      setAvailableSensors(available);
+    } catch (error) {
+      console.error('Error fetching available sensors:', error);
+    }
+  };
+
+  const fetchUserProfile = async () => {
+    try {
+      const fetchedProfile = await getProfileById(authStore.token);
+      setProfile(fetchedProfile);
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const {  sensorId, placa } = formData;
+    const token = authStore.token;
+
+    console.log('Form Data:', formData); // Mensaje de depuración para verificar el formData
+
+    try {
+      if (!sensorId || !placa) {
+        console.error('Debe seleccionar un sensor y una placa válida');
+        return;
+      }
+
+      console.log('FormData enviado:', formData); // Mensaje de depuración para verificar el FormData antes de enviarlo
+
+      const reservacion = await createReservacion(formData, token);
+      const id_reservacvion = reservacion.message.reservacion_id
+      addVenta(id_reservacvion)
+      setIsModalOpen(true); // Mostrar modal de éxito o realizar otra acción
+    } catch (error) {
+      console.error('Error creating reservation:', error);
+      // Manejar el error según tus necesidades
+    }
   };
 
   const handleCloseModal = () => {
